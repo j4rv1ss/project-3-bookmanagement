@@ -24,7 +24,7 @@ const createUser = async function (req, res) {
       return res
         .status(400)
         .send({ status: false, message: "Please provide Details" });
-    let { title, name, phone, email, password, address } = data;
+    let { title, name, phone, email, password } = data;
     //Title Validation
     if (!isValid(title))
       return res
@@ -96,11 +96,17 @@ const createUser = async function (req, res) {
           password.length
         )} not allowed! must be between 8 to 15`,
       });
+
     //Address validation
-    let { street, city, pincode } = data.address;
-    if (Object.keys(address) > 0) {
+    let address = req.body.address;
+    if (!address) {
+      let saveData = await userModel.create(data);
+      return res
+        .status(201)
+        .send({ status: true, message: "Success", data: saveData });
+    } else if (Object.keys(address).length > 0) {
       if (
-        !street.match(/^[a-zA-Z0-9 \.]+$/) ||
+        !address.street.match(/^[a-zA-Z0-9 \.]+$/) ||
         typeof address.street !== "string"
       )
         return res.status(400).send({
@@ -108,14 +114,20 @@ const createUser = async function (req, res) {
           message:
             "Please provide Street in string that does not contain any symbol ",
         });
-      if (!city.match(/^[a-zA-Z]+$/) || typeof address.city !== "string")
+      if (
+        !address.city.match(/^[a-zA-Z]+$/) ||
+        typeof address.city !== "string"
+      )
         return res.status(400).send({
           status: false,
           message:
             "Please provide city in string that does not contain any symbol && numbers ",
         });
 
-      if (!pincode.match(/^[0-9]{6}$/) || typeof address.pincode !== "string")
+      if (
+        !address.pincode.match(/^[0-9]{6}$/) ||
+        typeof address.pincode !== "string"
+      )
         return res.status(400).send({
           status: false,
           message: `Please provide pincode in string that does not contain any symbol && ${String(
@@ -173,7 +185,7 @@ const login = async function (req, res) {
       {
         userId: checkData._id.toString(),
         iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + 100000000 * 60 * 60,
+        exp: Math.floor(Date.now() / 1000) + 10000 * 600 * 600,
       },
       "Book-Management-Project-3"
     );

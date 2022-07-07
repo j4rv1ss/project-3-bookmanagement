@@ -11,6 +11,18 @@ function isValid(value) {
 function isValidBody(body) {
   return Object.keys(body).length > 0;
 }
+const isValidArray = (value) => {
+  if (Array.isArray(value)) {
+    for (let i = 0; i < value.length; i++) {
+      if (value[i].trim().length === 0 || typeof value[i] !== "string") {
+        return false;
+      }
+    }
+    return true;
+  } else {
+    return false;
+  }
+};
 
 const createBook = async function (req, res) {
   try {
@@ -59,13 +71,13 @@ const createBook = async function (req, res) {
       return res
         .status(400)
         .send({ status: false, message: "Please provide ISBN" });
-
+    
     if (ISBN.trim().length != 13)
       return res.status(400).send({
         status: false,
-        message: ` ISBN number should be 13`,
+        message: ` ${ISBN.trim().length} ISBN number should be 13`,
       });
-    if (!/^[0-9]{13}$/.test(ISBN))
+    if (!ISBN.match(/^[0-9 ]+$/))
       return res.status(400).send({
         status: false,
         message: `ISBN Should not contain Alphabets`,
@@ -86,23 +98,18 @@ const createBook = async function (req, res) {
         .status(400)
         .send({ status: false, message: "Please provide subcategory" });
 
-        const isValidArray = (value) => {
-          if (Array.isArray(value)) {
-              for (let i = 0; i < value.length; i++) {
-                  if (value[i].trim().length === 0 || typeof (value[i]) !== "string") { return false }
-              }
-              return true
-          } else { return false }
-      }
-      
-      if(!isValidArray(subcategory))return res.status(400)
-      .send({ status: false, message: "Please prov54654" });
+    
+
+    if (!isValidArray(subcategory))
+      return res
+        .status(400)
+        .send({ status: false, message: "Please prov54654" });
     //reviews
     // if (typeof reviews !== "number")return res
-    
-      // return res
-      //   .status(400)
-      //   .send({ status: false, message: "Please provide reviews in numbers" });
+
+    // return res
+    //   .status(400)
+    //   .send({ status: false, message: "Please provide reviews in numbers" });
 
     let saveData = await bookModel.create(data);
     return res
