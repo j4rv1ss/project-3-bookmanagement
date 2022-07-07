@@ -1,8 +1,7 @@
 const bookModel = require("../models/bookModel");
 const userModel = require("../models/userModel");
 const reviewModel = require("../models/reviewModel");
-const { findOneAndUpdate } = require("../models/bookModel");
-const { search } = require("../routes/route");
+const mongoose = require("mongoose");
 
 function isValid(value) {
   if (typeof value === "undefined" || typeof value === "null") return false;
@@ -31,35 +30,79 @@ const createBook = async function (req, res) {
       reviews,
       releasedAt,
     } = data;
-    //Title
-    // if (!isValid(title))
-    //   return res
-    //     .status(400)
-    //     .send({ status: false, message: "Please provide Title" });
-    // let checkTitle = await bookModel.findOne({ title });
-    // if (checkTitle)
-    //   return res
-    //     .status(400)
-    //     .send({ status: false, message: `${checkTitle} is already Taken` });
-    // //excerpt
-    // if (!isValid(excerpt))
-    //   return res
-    //     .status(400)
-    //     .send({ status: false, message: "Please provide excerpt" });
-    // //UserID
-    // if (!isValid(userId))
-    //   return res
-    //     .status(400)
-    //     .send({ status: false, message: "Please provide userId" });
-    // if (mongoose.Types.ObjectId.isValid(userId))
-    //   return res
-    //     .status(400)
-    //     .send({ status: false, message: "Please provide valid userId" });
-    // let checkuserId = await bookModel.findOne({ userId });
-    // if (checkuserId)
-    //   return res
-    //     .status(400)
-    //     .send({ status: false, message: `${checkuserId} is already Taken` });
+    // Title
+    if (!isValid(title))
+      return res
+        .status(400)
+        .send({ status: false, message: "Please provide Title" });
+    let checkTitle = await bookModel.findOne({ title });
+    if (checkTitle)
+      return res
+        .status(400)
+        .send({ status: false, message: `${title} is already Taken` });
+    //excerpt
+    if (!isValid(excerpt))
+      return res
+        .status(400)
+        .send({ status: false, message: "Please provide excerpt" });
+    //UserID
+    if (!isValid(userId))
+      return res
+        .status(400)
+        .send({ status: false, message: "Please provide userId" });
+    if (!mongoose.isValidObjectId(userId))
+      return res
+        .status(400)
+        .send({ status: false, message: "Please provide valid userId" });
+    //ISBN
+    if (!isValid(ISBN))
+      return res
+        .status(400)
+        .send({ status: false, message: "Please provide ISBN" });
+
+    if (ISBN.trim().length != 13)
+      return res.status(400).send({
+        status: false,
+        message: ` ISBN number should be 13`,
+      });
+    if (!/^[0-9]{13}$/.test(ISBN))
+      return res.status(400).send({
+        status: false,
+        message: `ISBN Should not contain Alphabets`,
+      });
+    let checkISBN = await bookModel.findOne({ ISBN });
+    if (checkISBN)
+      return res
+        .status(400)
+        .send({ status: false, message: `${ISBN} is already Taken!` });
+    // category
+    if (!isValid(category))
+      return res
+        .status(400)
+        .send({ status: false, message: "Please provide category" });
+    //subcategory
+    if (!isValid(subcategory))
+      return res
+        .status(400)
+        .send({ status: false, message: "Please provide subcategory" });
+
+        const isValidArray = (value) => {
+          if (Array.isArray(value)) {
+              for (let i = 0; i < value.length; i++) {
+                  if (value[i].trim().length === 0 || typeof (value[i]) !== "string") { return false }
+              }
+              return true
+          } else { return false }
+      }
+      
+      if(!isValidArray(subcategory))return res.status(400)
+      .send({ status: false, message: "Please prov54654" });
+    //reviews
+    // if (typeof reviews !== "number")return res
+    
+      // return res
+      //   .status(400)
+      //   .send({ status: false, message: "Please provide reviews in numbers" });
 
     let saveData = await bookModel.create(data);
     return res
@@ -132,19 +175,20 @@ const updateBookById = async function (req, res) {
     let bookId = req.params.bookId;
     let temp = req.body;
     // console.log(bookId)
-    if (!bookId)
+    if (!mongoose.isValidObjectId(bookId))
       return res
         .status(400)
-        .send({ status: false, message: "Please Provide Book Id" });
-    let searchBook = await bookModel.find({ _id: bookId,  isDeleted: true }
-      );
-      // console.log(searchBook)
-    if (searchBook==null)
+        .send({ status: false, msg: "Invalid Book objectId." });
+
+    let searchBook = await bookModel.findOne({ _id: bookId, isDeleted: false });
+
+    // console.log(searchBook)
+    if (!searchBook)
       return res
         .status(404)
         .send({ status: false, message: "Not Found or deleted" });
 
-        /*---------------------FOR UNIQUE ITEMS-------------------------*/
+    /*---------------------FOR UNIQUE ITEMS-------------------------*/
     if (!isValidBody(temp))
       return res
         .status(400)
@@ -164,7 +208,7 @@ const updateBookById = async function (req, res) {
       });
     /////////////////////////////////////////////////////////////////////////////
     let finalUpdate = await bookModel.findOneAndUpdate(
-      { bookId ,isDeleted:false},
+      { _id: bookId, isDeleted: false },
       {
         $set: {
           excerpt: temp.excerpt,
@@ -174,8 +218,8 @@ const updateBookById = async function (req, res) {
         },
       },
       { new: true }
-      );
-      console.log(finalUpdate)
+    );
+
     return res
       .status(200)
       .send({ status: true, message: "Success", data: finalUpdate });
@@ -198,8 +242,8 @@ const deleteBookbyId = async function (req, res) {
         .status(404)
         .send({ status: false, message: "Not Found or deleted" });
     const final = await bookModel.findOneAndUpdate(
-      { bookId },
-      { $set: { isDeleted: true }, deletedAt: new Date() },
+      { _id: bookId, isDeleted: false },
+      { isDeleted: true, deletedAt: Date.now() },
       { new: true }
     );
     return res
