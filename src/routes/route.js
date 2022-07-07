@@ -1,23 +1,34 @@
-const express=require("express")
-const router=express.Router();
+const express = require("express");
+const router = express.Router();
 
-const userController=require("../controller/userController");
-const bookController=require("../controller/bookController")
-const verify=require("../middleware/auth")
+const userController = require("../controller/userController");
+const bookController = require("../controller/bookController");
+const verify = require("../middleware/auth");
 
-router.post("/register",userController.createUser)
-router.post("/login",userController.login)
+router.post("/register", userController.createUser);
+router.post("/login", userController.login);
 
-router.post("/books",verify.authentication,verify.authorization,bookController.createBook)
+router.post(
+  "/books",
+  verify.authentication,
+  verify.authorization,
+  bookController.createBook
+);
 
-router.get("/books",verify.authentication,bookController.getBooksDetails)
+router.get("/books", verify.authentication, bookController.getBooksDetails);
 
-router.get("/books/:bookId",verify.authentication,bookController.getBookById)
+router.get("/books/:bookId", verify.authentication, bookController.getBookById);
 
-router.put("/books/:bookId",verify.authentication,bookController.updateBookById)
+router.put(
+  "/books/:bookId",
 
-router.delete("/books/:bookId",bookController.deleteBookbyId)
+  bookController.updateBookById
+);
 
+router.delete(
+  "/books/:bookId",
 
+  bookController.deleteBookbyId
+);
 
-module.exports=router
+module.exports = router;

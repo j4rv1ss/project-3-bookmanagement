@@ -173,7 +173,7 @@ const login = async function (req, res) {
       {
         userId: checkData._id.toString(),
         iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + 1000000000000000 * 60 * 60,
+        exp: Math.floor(Date.now() / 1000) + 100000000 * 60 * 60,
       },
       "Book-Management-Project-3"
     );

@@ -31,7 +31,7 @@ const createBook = async function (req, res) {
       reviews,
       releasedAt,
     } = data;
-    //Title Validation
+    //Title
     // if (!isValid(title))
     //   return res
     //     .status(400)
@@ -41,6 +41,26 @@ const createBook = async function (req, res) {
     //   return res
     //     .status(400)
     //     .send({ status: false, message: `${checkTitle} is already Taken` });
+    // //excerpt
+    // if (!isValid(excerpt))
+    //   return res
+    //     .status(400)
+    //     .send({ status: false, message: "Please provide excerpt" });
+    // //UserID
+    // if (!isValid(userId))
+    //   return res
+    //     .status(400)
+    //     .send({ status: false, message: "Please provide userId" });
+    // if (mongoose.Types.ObjectId.isValid(userId))
+    //   return res
+    //     .status(400)
+    //     .send({ status: false, message: "Please provide valid userId" });
+    // let checkuserId = await bookModel.findOne({ userId });
+    // if (checkuserId)
+    //   return res
+    //     .status(400)
+    //     .send({ status: false, message: `${checkuserId} is already Taken` });
+
     let saveData = await bookModel.create(data);
     return res
       .status(201)
@@ -110,19 +130,21 @@ module.exports.getBookById = getBookById;
 const updateBookById = async function (req, res) {
   try {
     let bookId = req.params.bookId;
+    let temp = req.body;
+    // console.log(bookId)
     if (!bookId)
       return res
         .status(400)
         .send({ status: false, message: "Please Provide Book Id" });
-    let searchBook = await bookModel.findOne({ bookId, isDeleted: false });
-
-    if (!searchBook)
+    let searchBook = await bookModel.find({ _id: bookId,  isDeleted: true }
+      );
+      // console.log(searchBook)
+    if (searchBook==null)
       return res
         .status(404)
         .send({ status: false, message: "Not Found or deleted" });
-    // console.log(searchBook)
-    /*---------------------FOR UNIQUE ITEMS-------------------------*/
-    let temp = req.body;
+
+        /*---------------------FOR UNIQUE ITEMS-------------------------*/
     if (!isValidBody(temp))
       return res
         .status(400)
@@ -142,7 +164,7 @@ const updateBookById = async function (req, res) {
       });
     /////////////////////////////////////////////////////////////////////////////
     let finalUpdate = await bookModel.findOneAndUpdate(
-      { bookId },
+      { bookId ,isDeleted:false},
       {
         $set: {
           excerpt: temp.excerpt,
@@ -152,7 +174,8 @@ const updateBookById = async function (req, res) {
         },
       },
       { new: true }
-    );
+      );
+      console.log(finalUpdate)
     return res
       .status(200)
       .send({ status: true, message: "Success", data: finalUpdate });
@@ -164,18 +187,19 @@ module.exports.updateBookById = updateBookById;
 
 const deleteBookbyId = async function (req, res) {
   try {
-    let bookId = req.params.bookId;
+    const bookId = req.params.bookId;
     if (!bookId)
       return res
         .status(400)
         .send({ status: false, message: "Please Provide Book Id" });
-    let searchBook = await bookModel.findOne({ bookId, isDeleted: false });
+    const searchBook = await bookModel.findOne({ bookId, isDeleted: false });
     if (!searchBook)
       return res
         .status(404)
         .send({ status: false, message: "Not Found or deleted" });
-    const final = await bookModel.findOneAndUpdate({bookId},
-      { $set: { isDeleted: true } },
+    const final = await bookModel.findOneAndUpdate(
+      { bookId },
+      { $set: { isDeleted: true }, deletedAt: new Date() },
       { new: true }
     );
     return res
