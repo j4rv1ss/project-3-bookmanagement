@@ -12,10 +12,11 @@ router.post("/books",verify.authentication,verify.authorization,bookController.c
 
 router.get("/books",verify.authentication,bookController.getBooksDetails)
 
+router.get("/books/:bookId",verify.authentication,bookController.getBookById)
 
+router.put("/books/:bookId",verify.authentication,bookController.updateBookById)
 
-
-
+router.delete("/books/:bookId",bookController.deleteBookbyId)
 
 
 

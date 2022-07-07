@@ -9,6 +9,12 @@ function isValid(value) {
 function isValidBody(body) {
   return Object.keys(body).length > 0;
 }
+function removeSpaces(value) {
+  return value
+    .split(" ")
+    .filter((v) => v)
+    .join(" ");
+}
 
 const createUser = async function (req, res) {
   try {
@@ -24,10 +30,6 @@ const createUser = async function (req, res) {
       return res
         .status(400)
         .send({ status: false, message: "Please provide Title" });
-    if (typeof title !== "string")
-      return res
-        .status(400)
-        .send({ status: false, message: "Please provide Title in String" });
     if (!title.match(/^(Mr|Mrs|Miss)$/))
       return res.status(400).send({
         status: false,
@@ -40,7 +42,7 @@ const createUser = async function (req, res) {
         status: false,
         message: "Please provide name ",
       });
-    if (!name.match(/^[a-zA-Z]+$/))
+    if (!name.match(/^[a-zA-Z ]+$/))
       return res.status(400).send({
         status: false,
         message: "Please provide only alphabets in name",
@@ -95,10 +97,10 @@ const createUser = async function (req, res) {
         )} not allowed! must be between 8 to 15`,
       });
     //Address validation
-
+    let { street, city, pincode } = data.address;
     if (Object.keys(address) > 0) {
       if (
-        !address.street.match(/^[a-zA-Z0-9 \.]+$/) ||
+        !street.match(/^[a-zA-Z0-9 \.]+$/) ||
         typeof address.street !== "string"
       )
         return res.status(400).send({
@@ -106,20 +108,14 @@ const createUser = async function (req, res) {
           message:
             "Please provide Street in string that does not contain any symbol ",
         });
-      if (
-        !address.city.match(/^[a-zA-Z]+$/) ||
-        typeof address.city !== "string"
-      )
+      if (!city.match(/^[a-zA-Z]+$/) || typeof address.city !== "string")
         return res.status(400).send({
           status: false,
           message:
             "Please provide city in string that does not contain any symbol && numbers ",
         });
 
-      if (
-        !address.pincode.match(/^[0-9]{6}$/) ||
-        typeof address.pincode !== "string"
-      )
+      if (!pincode.match(/^[0-9]{6}$/) || typeof address.pincode !== "string")
         return res.status(400).send({
           status: false,
           message: `Please provide pincode in string that does not contain any symbol && ${String(
@@ -177,7 +173,7 @@ const login = async function (req, res) {
       {
         userId: checkData._id.toString(),
         iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + 100000 * 60 * 60,
+        exp: Math.floor(Date.now() / 1000) + 1000000000000000 * 60 * 60,
       },
       "Book-Management-Project-3"
     );

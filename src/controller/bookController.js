@@ -1,5 +1,8 @@
 const bookModel = require("../models/bookModel");
 const userModel = require("../models/userModel");
+const reviewModel = require("../models/reviewModel");
+const { findOneAndUpdate } = require("../models/bookModel");
+const { search } = require("../routes/route");
 
 function isValid(value) {
   if (typeof value === "undefined" || typeof value === "null") return false;
@@ -53,7 +56,7 @@ const getBooksDetails = async function (req, res) {
   try {
     let data = req.query;
     let search = await bookModel
-      .find({$and:[{   isDeleted: false },data] })
+      .find({ $and: [{ isDeleted: false }, data] })
       .select({
         _id: 1,
         title: 1,
@@ -61,7 +64,7 @@ const getBooksDetails = async function (req, res) {
         userId: 1,
         category: 1,
         releasedAt: 1,
-  });
+      });
     return res
       .status(200)
       .send({ status: true, message: "Books list", data: search });
@@ -71,3 +74,116 @@ const getBooksDetails = async function (req, res) {
 };
 
 module.exports.getBooksDetails = getBooksDetails;
+
+const getBookById = async function (req, res) {
+  try {
+    const bookid = req.params.bookId;
+
+    if (String(bookid).length == 0)
+      return res
+        .status(400)
+        .send({ status: false, message: "Please Provide Book Id" });
+    const searchBook = await bookModel.findOne({
+      _id: bookid,
+      isDeleted: false,
+    });
+    // console.log(searchBook);
+    if (!searchBook)
+      return res.status(404).send({ status: false, message: "Not Found" });
+
+    const reviewData = await reviewModel.find({ bookId: bookid });
+    const finalRespose = {
+      searchBook,
+      reviewsData: reviewData,
+    };
+
+    return res
+      .status(200)
+      .send({ status: true, message: "Books list", data: finalRespose });
+  } catch (error) {
+    return res.status(500).send({ status: false, message: error.message });
+  }
+};
+
+module.exports.getBookById = getBookById;
+
+const updateBookById = async function (req, res) {
+  try {
+    let bookId = req.params.bookId;
+    if (!bookId)
+      return res
+        .status(400)
+        .send({ status: false, message: "Please Provide Book Id" });
+    let searchBook = await bookModel.findOne({ bookId, isDeleted: false });
+
+    if (!searchBook)
+      return res
+        .status(404)
+        .send({ status: false, message: "Not Found or deleted" });
+    // console.log(searchBook)
+    /*---------------------FOR UNIQUE ITEMS-------------------------*/
+    let temp = req.body;
+    if (!isValidBody(temp))
+      return res
+        .status(400)
+        .send({ status: false, message: "Provide something to Update!" });
+
+    let uniqueTitle = await bookModel.findOne({ title: temp.title });
+    if (uniqueTitle)
+      return res.status(400).send({
+        status: false,
+        message: `${temp.title} is already present You can't Update it`,
+      });
+    let uniqueISBN = await bookModel.findOne({ ISBN: temp.ISBN });
+    if (uniqueISBN)
+      return res.status(400).send({
+        status: false,
+        message: `${temp.ISBN} is already present You can't Update it`,
+      });
+    /////////////////////////////////////////////////////////////////////////////
+    let finalUpdate = await bookModel.findOneAndUpdate(
+      { bookId },
+      {
+        $set: {
+          excerpt: temp.excerpt,
+          releasedAt: temp.releasedAt,
+          title: temp.title,
+          ISBN: temp.ISBN,
+        },
+      },
+      { new: true }
+    );
+    return res
+      .status(200)
+      .send({ status: true, message: "Success", data: finalUpdate });
+  } catch (error) {
+    return res.status(500).send({ status: false, message: error.message });
+  }
+};
+module.exports.updateBookById = updateBookById;
+
+const deleteBookbyId = async function (req, res) {
+  try {
+    let bookId = req.params.bookId;
+    if (!bookId)
+      return res
+        .status(400)
+        .send({ status: false, message: "Please Provide Book Id" });
+    let searchBook = await bookModel.findOne({ bookId, isDeleted: false });
+    if (!searchBook)
+      return res
+        .status(404)
+        .send({ status: false, message: "Not Found or deleted" });
+    const final = await bookModel.findOneAndUpdate({bookId},
+      { $set: { isDeleted: true } },
+      { new: true }
+    );
+    return res
+      .status(200)
+      .send({ status: true, message: "Success", data: final });
+  } catch (error) {
+    return res.status(500).send({ status: false, message: error.message });
+  }
+};
+
+module.exports.deleteBookbyId = deleteBookbyId;
