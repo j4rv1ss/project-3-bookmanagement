@@ -9,12 +9,6 @@ function isValid(value) {
 function isValidBody(body) {
   return Object.keys(body).length > 0;
 }
-function removeSpaces(value) {
-  return value
-    .split(" ")
-    .filter((v) => v)
-    .join(" ");
-}
 
 const createUser = async function (req, res) {
   try {
@@ -24,12 +18,14 @@ const createUser = async function (req, res) {
       return res
         .status(400)
         .send({ status: false, message: "Please provide Details" });
-    let { title, name, phone, email, password } = data;
+
+    let { title, name, phone, email, password, address } = data;
     //Title Validation
     if (!isValid(title))
       return res
         .status(400)
         .send({ status: false, message: "Please provide Title" });
+
     if (!title.match(/^(Mr|Mrs|Miss)$/))
       return res.status(400).send({
         status: false,
@@ -98,42 +94,25 @@ const createUser = async function (req, res) {
       });
 
     //Address validation
-    let address = req.body.address;
-    if (!address) {
-      let saveData = await userModel.create(data);
-      return res
-        .status(201)
-        .send({ status: true, message: "Success", data: saveData });
-    } else if (Object.keys(address).length > 0) {
-      if (
-        !address.street.match(/^[a-zA-Z0-9 \.]+$/) ||
-        typeof address.street !== "string"
-      )
-        return res.status(400).send({
-          status: false,
-          message:
-            "Please provide Street in string that does not contain any symbol ",
-        });
-      if (
-        !address.city.match(/^[a-zA-Z]+$/) ||
-        typeof address.city !== "string"
-      )
-        return res.status(400).send({
-          status: false,
-          message:
-            "Please provide city in string that does not contain any symbol && numbers ",
-        });
 
-      if (
-        !address.pincode.match(/^[0-9]{6}$/) ||
-        typeof address.pincode !== "string"
-      )
+    if (address) {
+      if (!/^[a-zA-Z0-9 \.]+$/.test(address.street))
         return res.status(400).send({
           status: false,
-          message: `Please provide pincode in string that does not contain any symbol && ${String(
-            address.pincode.length
-          )} should be 6`,
+          message: "Please enter a valid street address ",
         });
+      if (!/^[a-zA-Z]+$/.test(address.city))
+        return res.status(400).send({
+          status: false,
+          message: "Please enter a valid city name and not containing numbers ",
+        });
+      if (address.pincode) {
+        if (!/^[0-9]{6}$/.test(address.pincode))
+          return res.status(400).send({
+            status: false,
+            message: "Please enter a valid pincode of 6 digit",
+          });
+      }
     }
 
     let saveData = await userModel.create(data);
@@ -160,7 +139,7 @@ const login = async function (req, res) {
       return res
         .status(400)
         .send({ status: false, message: "Please provide email" });
-    if (/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email) === false)
+    if (/^[a-zA-Z_\.\-0-9]+[@][a-z]{3,6}[.][a-z]{2,4}$/.test(email) === false)
       return res.status(400).send({
         status: false,
         message: `Email should be a valid email address`,
@@ -178,6 +157,7 @@ const login = async function (req, res) {
     /*--------------------------VALIDATION ENDS--------------------------------*/
 
     let checkData = await userModel.findOne({ email, password });
+    // console.log(checkData)
     if (!checkData)
       return res.status(404).send({ status: false, msg: "Not Found" });
 
@@ -189,6 +169,7 @@ const login = async function (req, res) {
       },
       "Book-Management-Project-3"
     );
+    // console.log(checkData._id.toString())
     res.setHeader("x-api-key", token);
     return res.status(201).send({ status: true, token: token });
   } catch (error) {

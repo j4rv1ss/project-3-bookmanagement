@@ -11,7 +11,7 @@ router.post("/login", userController.login);
 router.post(
   "/books",
   verify.authentication,
-  verify.authorization,
+  verify.authorizationByBody,
   bookController.createBook
 );
 
@@ -21,13 +21,15 @@ router.get("/books/:bookId", verify.authentication, bookController.getBookById);
 
 router.put(
   "/books/:bookId",
-
+  verify.authentication,
+  verify.authorizationByParams,
   bookController.updateBookById
 );
 
 router.delete(
   "/books/:bookId",
-
+  verify.authentication,
+  verify.authorizationByParams,
   bookController.deleteBookbyId
 );
 
