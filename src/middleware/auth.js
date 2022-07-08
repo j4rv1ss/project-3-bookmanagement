@@ -1,7 +1,12 @@
 const jwt = require("jsonwebtoken");
 const bookModel = require("../models/bookModel");
 const userModel = require("../models/userModel");
-
+const mongoose = require("mongoose");
+function isValid(value) {
+  if (typeof value === "undefined" || typeof value === "null") return false;
+  if (typeof value === "string" && value.trim().length === 0) return false;
+  return true;
+}
 let authentication = async function (req, res, next) {
   try {
     let token = req.headers["x-api-key"];
@@ -26,8 +31,6 @@ let authentication = async function (req, res, next) {
   }
 };
 
-module.exports.authentication = authentication;
-
 let authorizationByParams = async function (req, res, next) {
   try {
     let token = req.headers["x-api-key"];
@@ -42,10 +45,9 @@ let authorizationByParams = async function (req, res, next) {
       return res.status(404).send({ status: false, msg: "Not Found" });
     }
 
+    if (!req.params.bookId)
+      return res.status(404).send({ status: false, msg: "Not00000 Found" });
     const checkBookInUser = await bookModel.findOne({ _id: req.params.bookId });
-    // console.log(checkBookInUser)
-    console.log(checkBookInUser.userId.toString());
-    console.log(decodeToken.userId);
 
     if (decodeToken.userId != checkBookInUser.userId.toString())
       return res.status(403).send({
@@ -58,11 +60,17 @@ let authorizationByParams = async function (req, res, next) {
   }
 };
 
-module.exports.authorizationByParams = authorizationByParams;
-
 const authorizationByBody = async function (req, res, next) {
   try {
     let userId = req.body.userId;
+    if (!isValid(userId))
+      return res
+        .status(400)
+        .send({ status: false, message: "Please provide userId" });
+    if (!mongoose.isValidObjectId(userId))
+      return res
+        .status(400)
+        .send({ status: false, message: "Please provide valid userId" });
     let token = req.headers["x-api-key"];
     if (!token) token = req.headers["x-Api-Key"];
     if (!token)
@@ -75,7 +83,7 @@ const authorizationByBody = async function (req, res, next) {
       return res.status(404).send({ status: false, msg: "Not Found" });
     }
     if (decodeToken.userId != userId)
-      return res.send({
+      return res.status(403).send({
         status: false,
         message: "Please authorize to create Book",
       });
@@ -84,4 +92,4 @@ const authorizationByBody = async function (req, res, next) {
     return res.status(500).send({ status: false, msg: error.message });
   }
 };
-module.exports.authorizationByBody = authorizationByBody;
+module.exports = { authorizationByBody, authorizationByParams, authentication };

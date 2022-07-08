@@ -58,14 +58,8 @@ const createBook = async function (req, res) {
         .status(400)
         .send({ status: false, message: "Please provide excerpt" });
     //UserID
-    if (!isValid(userId))
-      return res
-        .status(400)
-        .send({ status: false, message: "Please provide userId" });
-    if (!mongoose.isValidObjectId(userId))
-      return res
-        .status(400)
-        .send({ status: false, message: "Please provide valid userId" });
+    
+
     const checkUserId = await userModel.findOne({ _id: userId });
     if (!checkUserId)
       return res
@@ -105,12 +99,10 @@ const createBook = async function (req, res) {
 
     if (subcategory.length >= 1) {
       if (!isValidArray(subcategory))
-        return res
-          .status(400)
-          .send({
-            status: false,
-            message: "Please give subcategory in Valid format ",
-          });
+        return res.status(400).send({
+          status: false,
+          message: "Please give subcategory in Valid format ",
+        });
     } else {
       return res
         .status(400)
@@ -250,12 +242,16 @@ module.exports.updateBookById = updateBookById;
 const deleteBookbyId = async function (req, res) {
   try {
     const bookId = req.params.bookId;
-    if (!bookId)
+    // if (!bookId)
+    //   return res
+    //     .status(400)
+    //     .send({ status: false, message: "Please Provide Book Id" });
+    if (!mongoose.isValidObjectId(bookId))
       return res
         .status(400)
         .send({ status: false, message: "Please Provide Book Id" });
     const searchBook = await bookModel.findById(bookId);
-    if (!searchBook)
+    if (searchBook!=null)
       return res
         .status(404)
         .send({ status: false, message: "Not Found...cool" });
