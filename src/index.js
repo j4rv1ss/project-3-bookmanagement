@@ -13,7 +13,7 @@ mongoose
       useNewUrlParser: true,
     }
   )
-  .then(() => console.log("Connected with Nishant's MongoDB"))
+  .then(() => console.log("Connected with MongoDB"))
   .catch((err) => console.log(err));
 
 app.use("/", route);
