@@ -1,1 +1,1 @@
-empty address in string
+releaseAt isn't updating

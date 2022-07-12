@@ -12,7 +12,7 @@ let authentication = async function (req, res, next) {
   try {
     let token = req.headers["x-api-key"];
     if (!token) token = req.headers["x-Api-Key"];
-    if (!token)return res.status(401).send({ status: false, msg: "Please provide token" });
+    if (!token)return res.status(401).send({ status: false, msg: "You are not authenticated" });
 
     let decodeToken = jwt.decode(token);
     if (decodeToken) {
@@ -35,7 +35,7 @@ let authorizationByParams = async function (req, res, next) {
     if (!bookId)return res.status(400).send({ status: false, message: "Please Provide Book Id" });
     if (!mongoose.isValidObjectId(bookId))return res.status(400).send({ status: false, message: "Please Provide Valid Book Id " });
     const checkBook = await bookModel.findOne({ _id: bookId });
-    if(!checkBook)return res.status(400).send({ status: false, msg: "Book Id is not found" });
+    if(!checkBook)return res.status(400).send({ status: false, msg: "Book Id is not found or are giving wrong Id" });
    
     let token = req.headers["x-api-key"];
     if (!token) token = req.headers["x-Api-Key"];

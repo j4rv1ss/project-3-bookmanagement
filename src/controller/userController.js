@@ -27,7 +27,7 @@ const createUser = async function (req, res) {
 
     //Phone Validation
     if (!isValid(phone))return res.status(400).send({status: false,message: "Please provide Phone "});
-    if (!phone.match(/^[789][0-9]{9}$/))return res.status(400).send({status: false,
+    if (!(/^[789][0-9]{9}$/).test(phone))return res.status(400).send({status: false,
     message: `${phone} is not valid (must start with 7,8,9) &&  must be 10 digits`});
 
     let checkPhone = await userModel.findOne({ phone });
@@ -45,7 +45,6 @@ const createUser = async function (req, res) {
 
     //Address validation
     if (address) {
-      // if(!isValidBody(address))return res.status(400).send({status: false,message: "Please provi"});
       if(String(address.length)==0)return res.status(400).send({
         status: false,message: "empty string not allowed"});
       if(typeof address!=="object"){return res.status(400).send({status: false,message: "Please provide address in Object type"});}
