@@ -28,7 +28,7 @@ const createUser = async function (req, res) {
     //Phone Validation
     if (!isValid(phone))return res.status(400).send({status: false,message: "Please provide Phone "});
     if (!phone.match(/^[789][0-9]{9}$/))return res.status(400).send({status: false,
-message: `${phone} is not valid (must start with 7,8,9) && ${String(phone.length)} is not allowed must be 10 digits`});
+    message: `${phone} is not valid (must start with 7,8,9) &&  must be 10 digits`});
 
     let checkPhone = await userModel.findOne({ phone });
     if (checkPhone)return res.status(400).send({status: false,message: `${phone} is already registered`,});
@@ -45,16 +45,16 @@ message: `${phone} is not valid (must start with 7,8,9) && ${String(phone.length
 
     //Address validation
     if (address) {
-      if(typeof address!=="object"){
-        return res.status(400).send({
-          status: false,message: "Please provide address in Object type"});
-      }else{
-        if (!/^[a-zA-Z0-9 \.]+$/.test(address.street))return res.status(400).send({
+      // if(!isValidBody(address))return res.status(400).send({status: false,message: "Please provi"});
+      if(String(address.length)==0)return res.status(400).send({
+        status: false,message: "empty string not allowed"});
+      if(typeof address!=="object"){return res.status(400).send({status: false,message: "Please provide address in Object type"});}
+      if (!/^[a-zA-Z0-9 \.]+$/.test(address.street))return res.status(400).send({
           status: false,message: "Please enter a valid street address "});
-        if (!/^[a-zA-Z]+$/.test(address.city))return res.status(400).send({status: false,message: "Please enter a valid city name and not containing numbers ",});
-        if (address.pincode) {
-        if (!/^[0-9]{6}$/.test(address.pincode))return res.status(400).send({status: false,message: "Please enter a valid pincode of 6 digit",})}
-      }}
+      if (!/^[a-zA-Z]+$/.test(address.city))return res.status(400).send({status: false,message: "Please enter a valid city name and not containing numbers ",});
+      if (address.pincode) {
+      if (!/^[0-9]{6}$/.test(address.pincode))return res.status(400).send({status: false,message: "Please enter a valid pincode of 6 digit",})}
+      }
 
     let saveData = await userModel.create(data);
     return res.status(201).send({ status: true, message: "Success", data: saveData });

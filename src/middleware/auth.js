@@ -64,7 +64,7 @@ const authorizationByBody = async function (req, res, next) {
     let decodeToken = jwt.verify(token, "Book-Management-Project-3");
     if (!decodeToken) {return res.status(404).send({ status: false, msg: "Not Found" });}
     if (decodeToken.userId != userId)
-      return res.status(403).send({status: false,message: "Please authorize to create Book",});
+      return res.status(403).send({status: false,message: "You are not authorize to create Book"});
       
     next();
   } catch (error) {

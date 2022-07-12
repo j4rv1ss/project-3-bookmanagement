@@ -33,11 +33,15 @@ const createReview=async function(req,res){
             if(typeof data.isDeleted!=="boolean")return res.status(400).send({ status: false, message: "Please give isDeleted in Boolean type only" })}
 //-----------------------------------------------------------------------------------//
         //Incrementing the reviews in book model
-        const increaseReview=await bookModel.findByIdAndUpdate(bookId,
+        const booksData=await bookModel.findByIdAndUpdate(bookId,
             {$inc:{reviews:1}},{new:true})      
         
-        const saveData=await reviewModel.create(data)
-        return res.status(201).send({status: true,message: 'Success',data:saveData});
+        const reviewsData=await reviewModel.create(data)
+
+        const booksReview=checkBook.toObject()
+        booksReview.reviewData=reviewsData
+        
+        return res.status(201).send({status: true,message: 'Success',data:booksReview});
     }catch(error){
         return res.status(500).send({status:false,message:error.message})
     }
@@ -62,9 +66,12 @@ const updateReviews=async function(req,res){
 
             if(checkReview.bookId.toString() !== bookId)return res.status(400).send({ status: false, message: "Book id or reviewId is incorrect" });
             
+
             
-            const saveData=await reviewModel.findOneAndUpdate({_id:reviewId},{$set:data},{new:true})
-            return res.status(200).send({ status: true, message: "Success",data:saveData });
+            const reviewsData=await reviewModel.findOneAndUpdate({_id:reviewId},{$set:data},{new:true})
+            const booksReview=checkBook.toObject()
+            booksReview.reviewData=reviewsData
+            return res.status(200).send({ status: true, message: "Success",data:booksReview });
     }else{
    return res.status(400).send({ status: false, message: "You can't change requested fields" });
 
@@ -91,9 +98,10 @@ const deleteReview=async function(req,res){
         if(checkReview.bookId.toString() !== bookId)return res.status(400).send({ status: false, message: "Book id or reviewId is incorrect" });
 
         //Deccrementing the reviews in book model
-        const increaseReview=await bookModel.findByIdAndUpdate(bookId,{$inc:{reviews:-1}},{new:true})  
+        const decreaseReview=await bookModel.findByIdAndUpdate(bookId,{$inc:{reviews:-1}},{new:true})  
 
         const final = await reviewModel.findOneAndUpdate({_id: reviewId},{ isDeleted: true, deletedAt:new Date()},{ new: true })
+        
         return res.status(200).send({ status: true, message: "Success", data: final });
     }catch(error){
         return res.status(500).send({ status: false, message: error.message });

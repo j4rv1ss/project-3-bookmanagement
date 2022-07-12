@@ -29,6 +29,7 @@ const createBook = async function (req, res) {
     if (!isValid(title))return res.status(400).send({ status: false, message: "Please provide Title" });
     let checkTitle = await bookModel.findOne({ title });
     if (checkTitle)return res.status(400).send({ status: false, message: `titile =>${title} is already Taken` });
+    title=title.toUpperCase()
     
     //excerpt
     if (!isValid(excerpt))return res.status(400).send({ status: false, message: "Please provide excerpt" });
@@ -54,7 +55,7 @@ const createBook = async function (req, res) {
       if (!isValidArray(subcategory))return res.status(400).send({status: false,message: "Please give subcategory in Valid format ",});
     } else {return res.status(400).send({ status: false, message: "Subcategory can't be empty" });}
     //releasedAt
-    // const date=moment.utc(releasedAt,'YYYY-MM-DD')
+    releasedAt=moment.utc(releasedAt,'YYYY-MM-DD')
     // if(!date.isValid())return res.status(400).send({status: false, message:"Invalid Date Format"})
     // releasedAt=date
     
@@ -62,6 +63,7 @@ const createBook = async function (req, res) {
     if(reviews){
       if (typeof reviews !== "number")return res.status(400).send({ status: false, message: "Please provide reviews in numbers" })}
 /*----------------------------VALIDATION ENDS----------------------------------*/
+
     let saveData = await bookModel.create(data);
     return res.status(201).send({ status: true, message: "Success", data: saveData });
   } catch (error) {
@@ -98,9 +100,14 @@ const getBookById = async function (req, res) {
     if (!searchBook) {
       return res.status(404).send({ status: false, message: "Sorry Book Id is not Found" })}
 
-    const reviewData = await reviewModel.find({ bookId: bookId });
+    const review = await reviewModel.find({ bookId: bookId,isDeleted:false });
+    
+    
+      reviewBook=searchBook.toObject()
+      reviewBook.reviewData=review
+   
 
-    return res.status(200).send({ status: true, message: "Books list", data: searchBook,reviewsData: reviewData });
+    return res.status(200).send({ status: true, message: "Books list", data: reviewBook });
   } catch (error) {
     return res.status(500).send({ status: false, message: error.message });
   }};
@@ -110,7 +117,7 @@ const updateBookById = async function (req, res) {
   try {
     let bookId = req.params.bookId;
     let temp = req.body;
-    // console.log(bookId)
+    
     if (!mongoose.isValidObjectId(bookId))return res.status(400).send({ status: false, msg: "Invalid Book objectId." });
 
     let searchBook = await bookModel.findOne({ _id: bookId, isDeleted: false });
