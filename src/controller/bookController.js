@@ -121,7 +121,7 @@ const updateBookById = async function (req, res) {
     if (!isValidBody(temp))return res.status(400).send({ status: false, message: "Provide something to Update!" });
     
     let uniqueTitle = await bookModel.findOne({ title: temp.title });
-    if (uniqueTitle)return res.status(400).send({status: false,message: `${title} is already present You can't Update it`,
+    if (uniqueTitle)return res.status(400).send({status: false,message: `Title is already taken`,
       });
       
       let uniqueISBN = await bookModel.findOne({ ISBN: temp.ISBN });
