@@ -115,20 +115,18 @@ const updateBookById = async function (req, res) {
 
     let searchBook = await bookModel.findOne({ _id: bookId, isDeleted: false });
 
-    
     if (!searchBook)return res.status(404).send({ status: false, message: "Not Found or deleted" });
 
+    
     if (!isValidBody(temp))return res.status(400).send({ status: false, message: "Provide something to Update!" });
     
-    let uniqueTitle = await bookModel.findOne({ title: title });
+    let uniqueTitle = await bookModel.findOne({ title: temp.title });
     if (uniqueTitle)return res.status(400).send({status: false,message: `${title} is already present You can't Update it`,
       });
-    
-      if(ISBN=="")return res.status(400).send({status: false,message: `Please give something in ISBN`})
       
       let uniqueISBN = await bookModel.findOne({ ISBN: temp.ISBN });
       if (uniqueISBN)return res.status(400).send({status: false,message: `${temp.ISBN} is already present You can't Update it`});
-      temp["ISBN"]=ISBN
+      
    
     //---------------------------------------------------------------------------//
     let finalUpdate = await bookModel.findOneAndUpdate({ _id: bookId, isDeleted:false },{$set: {excerpt: temp.excerpt,releasedAt: temp.releasedAt,title: temp.title,ISBN: temp.ISBN}},{ new: true }).select({__v:0});
