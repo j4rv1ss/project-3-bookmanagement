@@ -19,6 +19,7 @@ const createReview=async function(req,res){
         data.reviewedAt=new Date()
 
         if(!mongoose.isValidObjectId(bookId))return res.status(400).send({ status: false, message: "BookId is not valid" });
+
         const checkBook=await bookModel.findOne({_id:bookId,isDeleted:false})
         if(!checkBook)return res.status(404).send({ status: false, message: "Book Not Found or Already deleted" });
         //ratings
@@ -27,10 +28,7 @@ const createReview=async function(req,res){
         if(!(/^[12345]$/).test(data.rating))return res.status(400).send({ status: false, message: "Ratings between 1-5" });
         //reviews
         if(typeof data.review!=="string")return res.status(400).send({ status: false, message: "Please give reviews in String" })
-        //isDeleted
-        if(data.isDeleted){
-            if(data.isDeleted===true)return res.status(400).send({ status: false, message: "You can't delete while making a review!" })
-            if(typeof data.isDeleted!=="boolean")return res.status(400).send({ status: false, message: "Please give isDeleted in Boolean type only" })}
+
 //-----------------------------------------------------------------------------------//
         //Incrementing the reviews in book model
         const booksData=await bookModel.findByIdAndUpdate(bookId,
@@ -38,7 +36,6 @@ const createReview=async function(req,res){
         
         const reviewsData=await reviewModel.create(data)
         Object.assign(booksData._doc, { reviewsData: [reviewsData] });
-        
         
         return res.status(201).send({status: true,message: 'Success',data:booksData});
     }catch(error){

@@ -45,8 +45,6 @@ const createUser = async function (req, res) {
 
     //Address validation
     if (address) {
-      if(String(address.length)==0)return res.status(400).send({
-        status: false,message: "empty string not allowed"});
       if(typeof address!=="object"){return res.status(400).send({status: false,message: "Please provide address in Object type"});}
       if (!/^[a-zA-Z0-9 \.]+$/.test(address.street))return res.status(400).send({
           status: false,message: "Please enter a valid street address "});
@@ -61,7 +59,6 @@ const createUser = async function (req, res) {
     return res.status(500).send({ status: false, message: error.message })}
 };
 
-module.exports.createUser = createUser;
 
 const login = async function (req, res) {
   try {
@@ -72,12 +69,9 @@ const login = async function (req, res) {
     if (!isValid(email))return res.status(400).send({ status: false, message: "Please provide email" });
     if (/^[a-zA-Z_\.\-0-9]+[@][a-z]{3,6}[.][a-z]{2,4}$/.test(email) === false)return res.status(400).send({ status: false,message: `Email should be a valid email address`});
     const isEmailAvailable = await userModel.findOne({ email });
-    if (!isEmailAvailable)return res.status(400).send({status: false,message: `${email} email is not registered`});
+    if (!isEmailAvailable)return res.status(400).send({status: false,message: `email is not registered`});
 
     if (!isValid(password))return res.status(400).send({ status: false, message: "Please provide password" });
-    
-    
-    
     /*--------------------------VALIDATION ENDS--------------------------------*/
 
     let checkData = await userModel.findOne({ email, password });
@@ -92,4 +86,4 @@ const login = async function (req, res) {
     return res.status(500).send({ status: false, msg: error.message });
   }};
 
-module.exports.login = login;
+module.exports={login,createUser}

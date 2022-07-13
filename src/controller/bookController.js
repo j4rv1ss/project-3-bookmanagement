@@ -2,7 +2,7 @@ const bookModel = require("../models/bookModel");
 const userModel = require("../models/userModel");
 const reviewModel = require("../models/reviewModel");
 const mongoose = require("mongoose");
-const moment=require("moment")
+
 
 function isValid(value) {
   if (typeof value === "undefined" || typeof value === "null") return false;
@@ -23,15 +23,15 @@ const createBook = async function (req, res) {
     // Title
     if (!isValid(title))return res.status(400).send({ status: false, message: "Please provide Title" });
     let checkTitle = await bookModel.findOne({ title });
-    if (checkTitle)return res.status(400).send({ status: false, message: `titile =>${title} is already Taken` });
-    title=title.toUpperCase()
+    if (checkTitle)return res.status(400).send({ status: false, message: `titile is already Taken` });
+
     
     //excerpt
     if (!isValid(excerpt))return res.status(400).send({ status: false, message: "Please provide excerpt" });
 
     //UserID
     const checkUserId = await userModel.findOne({ _id: userId });
-    if (!checkUserId)return res.status(400).send({ status: false, message: `${userId} is not present` });
+    if (!checkUserId)return res.status(400).send({ status: false, message: `userId is not present` });
 
     //ISBN
     if (!isValid(ISBN))return res.status(400).send({ status: false, message: "Please provide ISBN" });
@@ -94,11 +94,9 @@ const getBookById = async function (req, res) {
 
     const review = await reviewModel.find({ bookId: bookId,isDeleted:false });
     
-    
-      reviewBook=searchBook.toObject()
+    const reviewBook=searchBook.toObject()
       reviewBook.reviewData=review
    
-
     return res.status(200).send({ status: true, message: "Books list", data: reviewBook });
   } catch (error) {
     return res.status(500).send({ status: false, message: error.message });
@@ -125,7 +123,7 @@ const updateBookById = async function (req, res) {
       });
       
       let uniqueISBN = await bookModel.findOne({ ISBN: temp.ISBN });
-      if (uniqueISBN)return res.status(400).send({status: false,message: `${temp.ISBN} is already present You can't Update it`});
+      if (uniqueISBN)return res.status(400).send({status: false,message: `ISBN is already present `});
       
    
     //---------------------------------------------------------------------------//
