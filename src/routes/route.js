@@ -18,9 +18,9 @@ router.put("/books/:bookId",verify.authentication,verify.authorizationByParams,b
 router.delete("/books/:bookId",verify.authentication,verify.authorizationByParams,bookController.deleteBookbyId);
 
 //-------------------------Review---------------------------//
-router.post("/books/:bookId/review",verify.authentication,reviewController.createReview)
-router.put("/books/:bookId/review/:reviewId",verify.authentication,reviewController.updateReviews)
-router.delete("/books/:bookId/review/:reviewId",verify.authentication,reviewController.deleteReview)
+router.post("/books/:bookId/review",reviewController.createReview)
+router.put("/books/:bookId/review/:reviewId",reviewController.updateReviews)
+router.delete("/books/:bookId/review/:reviewId",reviewController.deleteReview)
 
 //Global API for not giving bookid in params
 router.all("/**", function (req, res) {
