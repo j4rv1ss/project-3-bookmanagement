@@ -2,8 +2,7 @@ const bookModel = require("../models/bookModel");
 const userModel = require("../models/userModel");
 const reviewModel = require("../models/reviewModel");
 const mongoose = require("mongoose");
-
-
+        
 function isValid(value) {
   if (typeof value === "undefined" || typeof value === "null") return false;
   if (typeof value === "string" && value.trim().length === 0) return false;
@@ -15,6 +14,7 @@ const dateRegex=/^\d{4}\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$/
 
 const createBook = async function (req, res) {
   try {
+   
     let data = req.body;
     /*----------------------------VALIDATION STArTS------------------------*/
     if (!isValidBody(data))return res.status(400).send({ status: false, message: "Please provide Details" });
@@ -35,8 +35,8 @@ const createBook = async function (req, res) {
 
     //ISBN
     if (!isValid(ISBN))return res.status(400).send({ status: false, message: "Please provide ISBN" });
-    if (ISBN.trim().length != 13)return res.status(400).send({status: false,message: ` ${ISBN.trim().length} ISBN number not allowed Please give 13 numbers`,});
-    if (!ISBN.match(/^[0-9\-]+$/))return res.status(400).send({status: false,message: `Please provide Numbers in ISBN`});
+    if (!/^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/.test(ISBN.trim())) {
+      return res.status(400).send({ status: false, message: "Please Enter valid ISBN number" })}
     let checkISBN = await bookModel.findOne({ ISBN });
     if (checkISBN)return res.status(400).send({ status: false, message: `${ISBN} is already Taken!` });
 
@@ -55,7 +55,8 @@ const createBook = async function (req, res) {
     if(reviews){
       if (typeof reviews !== "number")return res.status(400).send({ status: false, message: "Please provide reviews in numbers" })}
 /*----------------------------VALIDATION ENDS----------------------------------*/
-      
+       
+
     let saveData = await bookModel.create(data);
     return res.status(201).send({ status: true, message: "Success", data: saveData });
   } catch (error) {
@@ -74,7 +75,7 @@ const getBooksDetails = async function (req, res) {
     }
 //-----------------------------------------------------------------------------//
 
-    let search = await bookModel.find({ $and: [{ isDeleted: false }, data] }).select({_id: 1,title: 1,excerpt: 1,userId: 1,category: 1,releasedAt: 1,reviews:1}).sort({title:1});
+    let search = await bookModel.find({ $and: [{ isDeleted: false }, data] }).select({_id: 1,title: 1,excerpt: 1,userId: 1,category: 1,releasedAt: 1,reviews:1}).collation().sort({title:1});
     if(search.length==0)return res.status(404).send({ Status: false, message: "Not found" })
     return res.status(200).send({ status: true, message: "Books list", data: search });
   } catch (error) {
